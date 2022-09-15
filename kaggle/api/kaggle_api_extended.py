@@ -1192,6 +1192,47 @@ class KaggleApi(KaggleApi):
         else:
             return False
 
+    def dataset_get_iostring(self,
+                             dataset,
+                             file_name,
+                             path=None,
+                             force=False,
+                             quiet=True):
+        """ download a single file for a dataset
+
+            Parameters
+            ==========
+            dataset: the string identified of the dataset
+                     should be in format [owner]/[dataset-name]
+            file_name: the dataset configuration file
+            path: if defined, download to this location
+            force: force the download if the file already exists (default False)
+            quiet: suppress verbose output (default is True)
+        """
+        if '/' in dataset:
+            self.validate_dataset_string(dataset)
+            dataset_urls = dataset.split('/')
+            owner_slug = dataset_urls[0]
+            dataset_slug = dataset_urls[1]
+        else:
+            owner_slug = self.get_config_value(self.CONFIG_NAME_USER)
+            dataset_slug = dataset
+
+        if path is None:
+            effective_path = self.get_default_download_dir(
+                'datasets', owner_slug, dataset_slug)
+        else:
+            effective_path = path
+
+        response = self.process_response(
+            self.datasets_download_file_with_http_info(
+                owner_slug=owner_slug,
+                dataset_slug=dataset_slug,
+                file_name=file_name,
+                _preload_content=False))
+        url = response.retries.history[0].redirect_location.split('?')[0]
+        return io.StringIO(response.data.decode("utf-8"))
+
     def dataset_download_files(self,
                                dataset,
                                path=None,

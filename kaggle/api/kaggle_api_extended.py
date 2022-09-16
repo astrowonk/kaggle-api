@@ -1219,19 +1219,12 @@ class KaggleApi(KaggleApi):
             owner_slug = self.get_config_value(self.CONFIG_NAME_USER)
             dataset_slug = dataset
 
-        if path is None:
-            effective_path = self.get_default_download_dir(
-                'datasets', owner_slug, dataset_slug)
-        else:
-            effective_path = path
-
         response = self.process_response(
             self.datasets_download_file_with_http_info(
                 owner_slug=owner_slug,
                 dataset_slug=dataset_slug,
                 file_name=file_name,
                 _preload_content=False))
-        url = response.retries.history[0].redirect_location.split('?')[0]
         bytes_io = io.BytesIO(response.data)
         if response.headers['Content-Type'] == 'application/zip':
             try:

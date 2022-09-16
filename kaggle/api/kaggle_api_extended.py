@@ -1198,7 +1198,8 @@ class KaggleApi(KaggleApi):
                             path=None,
                             force=False,
                             quiet=True):
-        """ download a single file for a dataset
+        """ retriev a single file for a dataset is bytes io suitable 
+                for pandas.read_csv()
 
             Parameters
             ==========
@@ -1235,7 +1236,7 @@ class KaggleApi(KaggleApi):
         if response.headers['Content-Type'] == 'application/zip':
             try:
                 with zipfile.ZipFile(bytes_io) as z:
-                    return io.BytesIO(z.open('tweets.csv').read())
+                    return io.BytesIO(z.open(file_name).read())
             except zipfile.BadZipFile:
                 pass
         return bytes_io

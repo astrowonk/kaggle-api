@@ -1192,12 +1192,12 @@ class KaggleApi(KaggleApi):
         else:
             return False
 
-    def dataset_get_iostring(self,
-                             dataset,
-                             file_name,
-                             path=None,
-                             force=False,
-                             quiet=True):
+    def dataset_get_bytesio(self,
+                            dataset,
+                            file_name,
+                            path=None,
+                            force=False,
+                            quiet=True):
         """ download a single file for a dataset
 
             Parameters
@@ -1231,7 +1231,14 @@ class KaggleApi(KaggleApi):
                 file_name=file_name,
                 _preload_content=False))
         url = response.retries.history[0].redirect_location.split('?')[0]
-        return io.StringIO(response.data.decode("utf-8"))
+        bytes_io = io.BytesIO(response.data)
+        if response.headers['Content-Type'] == 'application/zip':
+            try:
+                with zipfile.ZipFile(bytes_io) as z:
+                    return io.BytesIO(z.open('tweets.csv').read())
+            except zipfile.BadZipFile:
+                pass
+        return bytes_io
 
     def dataset_download_files(self,
                                dataset,
